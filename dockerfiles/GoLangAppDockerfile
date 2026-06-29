@@ -1,0 +1,45 @@
+FROM golang:1.22-alpine AS buildstage
+
+# Use Go build cache for dependencies
+RUN --mount=type=cache,target=/go/pkg/mod \
+    --mount=type=cache,target=/root/.cache/go-build \
+    mkdir -p /root/.cache/go-build
+
+WORKDIR /usr/src/app
+
+# Copy the files with dependencies
+COPY go.mod go.sum ./
+
+# Download the dependencies
+RUN go mod download
+
+# Copy over the source code
+COPY . .
+
+# After downloading dependencies, build the code.
+
+RUN go build -o product-catalog ./
+
+##################################################
+
+FROM alpine AS release
+
+## Keep the workdir same as build artifacts
+WORKDIR /usr/src/app
+
+# Copy over the build artifacts from buildstage
+##
+# Aditya: 
+# - Adding '--from' marks the entry of artifacts from the previous stage.
+# - Any change in the instructions before this COPY instruction, would trigger the rebuild of previous stage as well 
+## 
+COPY --from=buildstage /usr/src/app/product-catalog ./
+
+# Copy over the static data in JSON  
+COPY ./products ./products
+
+# Set the Port for app, as per README.
+
+ENV PRODUCT_CATALOG_PORT=8088
+
+ENTRYPOINT [ "./product-catalog" ]
