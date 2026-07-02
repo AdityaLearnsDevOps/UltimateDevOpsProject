@@ -1,0 +1,28 @@
+FROM eclipse-temurin:21-jdk AS buildstage
+
+WORKDIR /usr/src/app
+
+COPY gradlew* settings.gradle* build.gradle .
+COPY ./gradle ./gradle
+COPY ./pb ./proto
+COPY ./src ./src
+
+RUN chmod +x ./gradlew
+RUN ./gradlew downloadRepos
+
+# As per Dev Docs, below command creates the executable Binary
+RUN ./gradlew installDist -PprotoSourceDir=./proto
+
+################################################################
+
+# Use only JRE to execute the app
+FROM eclipse-temurin:21-jre AS releasestage
+
+WORKDIR /usr/src/app
+
+COPY --from=buildstage /usr/src/app/ ./
+
+ENV AD_PORT=8080
+ENV FEATURE_FLAG_GRPC_SERVICE_ADDR=featureflagservice:50053
+
+ENTRYPOINT ["./build/install/opentelemetry-demo-ad/bin/Ad"]
