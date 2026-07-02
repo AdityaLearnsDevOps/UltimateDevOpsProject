@@ -1,0 +1,33 @@
+FROM python:3.12-slim AS buildstage
+
+WORKDIR /usr/src/app
+
+COPY demo_pb2* logger.py metrics.py ./
+COPY requirements.txt ./
+COPY ./genproto .
+
+# Bring over source code
+COPY recommendation_server.py ./
+
+# Upgrade pip to latest version
+RUN python3 -m pip install --upgrade pip
+
+# Download and install dependencies
+RUN pip install -r requirements.txt
+
+##############################################3
+
+
+FROM python:3.12-slim  AS release
+
+WORKDIR /usr/src/app
+
+COPY --from=buildstage /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages 
+COPY --from=buildstage /usr/local/bin /usr/local/bin
+COPY --from=buildstage /usr/src/app ./
+
+ENV RECOMMENDATION_PORT=8090
+ENV OTEL_SERVICE_NAME=recommendation-service
+ENV PRODUCT_CATALOG_ADDR=0.0.0.0:3550
+
+ENTRYPOINT ["python3", "recommendation_server.py"] 
