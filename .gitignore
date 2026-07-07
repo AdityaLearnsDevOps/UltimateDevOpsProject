@@ -1,1 +1,8 @@
 EComm_Website
+/terraform_scripts/eks/backend/.terraform/
+/terraform_scripts/eks/backend/.terraform.lock.hcl
+
+/terraform_scripts/.terraform/
+/terraform_scripts/.terraform.lock.hcl
+
+terraform.tfstate*
