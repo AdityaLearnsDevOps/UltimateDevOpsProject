@@ -5,7 +5,7 @@ output "vpc_id" {
 
 output "nat_gw_id" {
   description = "NAT-GW ID"
-  value = aws_nat_gateway.nat_gw.id
+  value = { for k, v in aws_nat_gateway.nat_gw : k => v.id }
 }
 
 output "public_ip" {

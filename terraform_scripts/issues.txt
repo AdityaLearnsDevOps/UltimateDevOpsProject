@@ -1,4 +1,4 @@
-1. After applying for_each to each subnet for fetching list of CIDR blocks:
+1. After applying for_each to each subnet for fetching list of CIDR blocks, I got:
 
 │ Error: Missing resource instance key
 │ 
@@ -14,3 +14,27 @@
 Solution:
  
 In each of the resource, where subnet ID is mapped, we need to fetch and pass the exact key from variable
+
+2. After updating resources with for_each mapping as required, I got:
+
+╷
+│ Error: Invalid index
+│ 
+│   on modules\vpc\main.tf line 105, in resource "aws_route_table_association" "priv_subnet_rt_association":
+│  105:   route_table_id = aws_route_table.main_net_priv_rt[each.value].id
+│     ├────────────────
+│     │ aws_route_table.main_net_priv_rt is object with 1 attribute "10.0.2.0/24"
+│     │ each.value is "10.0.1.0/24"
+│ 
+│ The given key does not identify an element in this collection value.
+╵
+
+RCA:
+- I was mapping public subnet CIDR to NAT_GW but later passing private subnet cidr, in the 'priv_subnet_rt_association' resource. 
+
+Solution:
+
+Updated the gateway_id to nat_gw was being set in the 'main_net_priv_rt' route.
+
+> It picks a NAT gateway for each private subnet by cycling through the available ones 
+(using position + modulo), so it works no matter how many NAT gateways you have.

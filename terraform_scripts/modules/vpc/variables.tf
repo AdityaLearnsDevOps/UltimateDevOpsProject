@@ -20,11 +20,11 @@ variable "pub_sub_cidr" {
 }
 variable "nat_gw_route_cidr" {
     description = "Provide a CIDR block for NAT GW"
-    type = list
-    default = ["0.0.0.0/24"]
+    type = string
+    default = "0.0.0.0/24"
 }
 variable "igw_route_cidr" {
     description = "Provide a CIDR block for IGW"
-    type = list
-    default = ["0.0.0.0/0"]
+    type = string
+    default = "0.0.0.0/0"
 }
