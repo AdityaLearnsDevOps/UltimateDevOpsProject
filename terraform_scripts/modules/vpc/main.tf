@@ -85,7 +85,7 @@ resource "aws_route_table" "main_net_rt" {
   tags = {
     Name = "UdemyProjRT"
   }
-}
+} 
 
 # Private Subnet <-> RT association
 resource "aws_route_table_association" "priv_subnet_rt_association" {
