@@ -1,6 +1,6 @@
 # Main VPC resource block:
 resource "aws_vpc" "main_net" {
-  cidr_block       = "10.0.0.0/16"
+  cidr_block       = var.vpc_cidr
   instance_tenancy = "default"
 
   tags = {
@@ -11,7 +11,8 @@ resource "aws_vpc" "main_net" {
 # Private subnet resource block:
 resource "aws_subnet" "priv_subnet" {
   vpc_id     = aws_vpc.main_net.id
-  cidr_block = "10.0.1.0/24"
+  for_each   = toset(var.priv_sub_cidr)
+  cidr_block = each.value
 
   tags = {
     Name = "UdemyProjectPrivSubnet"
@@ -21,7 +22,8 @@ resource "aws_subnet" "priv_subnet" {
 # Public subnet resource block:
 resource "aws_subnet" "pub_subnet" {
   vpc_id     = aws_vpc.main_net.id
-  cidr_block = "10.0.2.0/24"
+  for_each   = toset(var.pub_sub_cidr)
+  cidr_block = each.value
 
   map_public_ip_on_launch = true  ## Create a Public IP when launching subnet 
    
@@ -73,12 +75,12 @@ resource "aws_route_table" "main_net_rt" {
 
     ## Route to the NAT Gateway for resources in Private Subnet
   route {
-    cidr_block = "0.0.0.0/24"
+    cidr_block = var.nat_gw_route_cidr
     gateway_id = aws_nat_gateway.nat_gw.id
   }
 
   route {
-    cidr_block = "0.0.0.0/0"
+    cidr_block = var.igw_route_cidr
     gateway_id = aws_internet_gateway.main_igw.id
   }
 
