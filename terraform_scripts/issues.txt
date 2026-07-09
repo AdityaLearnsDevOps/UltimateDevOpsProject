@@ -1,0 +1,16 @@
+1. After applying for_each to each subnet for fetching list of CIDR blocks:
+
+│ Error: Missing resource instance key
+│ 
+│   on modules\vpc\main.tf line 48, in resource "aws_nat_gateway" "nat_gw":
+│   48:   subnet_id = aws_subnet.pub_subnet.id
+│ 
+│ Because aws_subnet.pub_subnet has "for_each" set, its attributes must be accessed on specific instances.
+│ 
+│ For example, to correlate with indices of a referring resource, use:
+│     aws_subnet.pub_subnet[each.key]
+╵
+
+Solution:
+ 
+In each of the resource, where subnet ID is mapped, we need to fetch and pass the exact key from variable
